@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Client</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #1a202c; /* Fallback for transparency */
+            color: #e2e8f0; /* Light text */
+        }
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .glass-bg {
+            background-color: rgba(23, 26, 35, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .nav-item {
+            padding: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0; /* Adjust margin for new design */
+            border-left: 4px solid transparent; /* For active indicator */
+        }
+        .nav-item.active {
+            background-color: rgba(79, 70, 229, 0.3); /* Indigo-ish for active */
+            color: #e0e0e0;
+            border-left-color: #6366f1; /* Stronger indigo for active border */
+        }
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05); /* Lighter hover */
+        }
+        .page-content {
+            transition: opacity 0.2s ease-in-out;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a4a6a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a5a7a;
+        }
+        .play-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(13, 226, 226, 0.3), inset 0 0 10px rgba(13, 226, 226, 0.2);
+        }
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(13, 226, 226, 0.5), inset 0 0 15px rgba(13, 226, 226, 0.3);
+        }
+        .play-button:active {
+            transform: translateY(0);
+        }
+        .mod-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .mod-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .version-item {
+            transition: background-color 0.2s ease;
+        }
+        /* Custom range slider thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #6366f1; /* Indigo color */
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3);
+            margin-top: -6px; /* Center thumb vertically */
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #6366f1;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3);
+        }
+        /* Custom toggle switch */
+        .peer:checked + .peer-checked\:after\:translate-x-full:after {
+            transform: translateX(100%);
+        }
+        .peer:checked + .peer-checked\:after\:border-white:after {
+            border-color: white;
+        }
+        .peer:checked + .peer-checked\:bg-indigo-600 {
+            background-color: #4f46e5; /* Indigo-600 */
+        }
+        /* Gradient text for Crystal */
+        .gradient-text {
+            background: linear-gradient(to right, #4dc0b5, #8b5cf6); /* Blue to purple gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent; /* Fallback for browsers that don't support -webkit-text-fill-color */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 overflow-hidden">
+
+    <!-- Background Image -->
+    <div class="absolute inset-0 z-0">
+        <img src="https://placehold.co/1920x1080/0a0a1a/ffffff?text=+" class="w-full h-full object-cover opacity-30" alt="Abstract background">
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
+    </div>
+
+    <div id="app" class="relative z-10 flex h-screen p-4">
+
+        <!-- Sidebar Navigation -->
+        <nav class="glass-bg rounded-2xl w-64 flex-shrink-0 flex flex-col">
+            <div class="p-6 text-center">
+                <h1 class="text-2xl font-bold tracking-wider text-white">
+                    <span class="gradient-text">Crystal</span>Client
+                </h1>
+                <p class="text-xs text-gray-400 font-mono mt-1">v1.0.0-beta</p>
+            </div>
+            
+            <ul class="flex-grow px-4">
+                <li><a href="#" data-target="home" class="nav-item flex items-center px-4 py-3 my-1 rounded-lg border-l-4 border-transparent active">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Home
+                </a></li>
+                <li><a href="#" data-target="modrinth" class="nav-item flex items-center px-4 py-3 my-1 rounded-lg border-l-4 border-transparent">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Modrinth Mods
+                </a></li>
+                <li><a href="#" data-target="settings" class="nav-item flex items-center px-4 py-3 my-1 rounded-lg border-l-4 border-transparent">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Settings
+                </a></li>
+            </ul>
+
+            <div class="p-4 mt-auto">
+                <div class="glass-bg rounded-lg p-4 flex items-center">
+                    <img src="https://placehold.co/40x40/7dd3fc/1e293b?text=S" class="rounded-full" alt="User Avatar">
+                    <div class="ml-3">
+                        <p class="font-semibold text-white">Steve</p>
+                        <a href="#" class="text-xs text-cyan-400 hover:underline">Switch Account</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-4 flex flex-col relative">
+            <!-- Draggable Header -->
+            <div class="w-full h-8 absolute top-0 left-0" style="-webkit-app-region: drag;">
+                <p class="text-xs text-gray-400 text-center pt-1" style="-webkit-app-region: no-drag;">Crystal Client</p>
+            </div>
+
+            <div id="home" class="page-content flex-1 flex flex-col justify-end glass-bg rounded-2xl p-8 pt-12"> <!-- Added pt-12 to account for the new header -->
+                <div class="text-center mb-8">
+                    <h2 class="text-5xl font-extrabold text-white">Ready to Play</h2>
+                    <button id="version-selector-btn" class="mt-2 inline-block bg-gray-800/50 hover:bg-gray-700/70 text-gray-300 font-mono py-2 px-4 rounded-lg transition-colors" style="-webkit-app-region: no-drag;">
+                        Minecraft 1.21.1 - Fabric 0.15.11
+                    </button>
+                </div>
+                <button id="play-button" class="play-button w-full max-w-sm mx-auto bg-cyan-400 text-gray-900 font-bold text-2xl py-5 rounded-xl shadow-lg" style="-webkit-app-region: no-drag;">
+                    PLAY
+                </button>
+            </div>
+
+            <div id="modrinth" class="page-content hidden absolute inset-0 flex-1 flex flex-col glass-bg rounded-2xl overflow-hidden pt-12"> <!-- Added pt-12 -->
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-700/50" style="-webkit-app-region: no-drag;">
+                    <h2 class="text-3xl font-bold text-white">Browse Modrinth</h2>
+                    <div class="mt-4 flex">
+                        <input type="text" id="mod-search" placeholder="Search for mods (e.g., 'sodium', 'iris')..." class="w-full bg-gray-900/50 border border-gray-700 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-2 rounded-r-lg">Search</button>
+                    </div>
+                </div>
+                <!-- Mod List -->
+                <div id="mod-list" class="flex-1 p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Mod cards will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <div id="settings" class="page-content hidden absolute inset-0 flex-1 flex flex-col glass-bg rounded-2xl p-8 overflow-y-auto pt-12"> <!-- Added pt-12 -->
+                <h2 class="text-3xl font-bold text-white mb-6" style="-webkit-app-region: no-drag;">Client Settings</h2>
+                <div class="space-y-6" style="-webkit-app-region: no-drag;">
+                    <div>
+                        <label for="ram-allocation" class="block text-sm font-medium text-gray-300">RAM Allocation</label>
+                        <input type="range" id="ram-allocation" min="2" max="32" value="8" step="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mt-2">
+                        <p class="text-center text-cyan-400 font-mono mt-1"><span id="ram-value">8</span> GB</p>
+                    </div>
+                    <div>
+                        <label for="java-path" class="block text-sm font-medium text-gray-300">Java Executable Path</label>
+                        <div class="mt-2 flex">
+                            <input type="text" id="java-path" value="C:\Program Files\Java\jdk-17\bin\javaw.exe" class="w-full bg-gray-900/50 border border-gray-700 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" readonly>
+                            <button class="bg-gray-600 hover:bg-gray-500 text-white font-semibold px-4 py-2 rounded-r-lg">Browse</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300">Show Snapshots</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" value="" class="sr-only peer" checked>
+                          <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+                     <div class="flex items-center justify-between">
+                        <span class="text-gray-300">Auto-update Mods</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" value="" class="sr-only peer">
+                          <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Version Selector Modal -->
+    <div id="version-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="glass-bg rounded-lg p-6 w-full max-w-md" style="-webkit-app-region: no-drag;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white">Select Version</h3>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <ul id="version-list" class="max-h-80 overflow-y-auto space-y-2 text-gray-200">
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.22 - Fabric 0.16.0</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Snapshot 25w32a</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.21.2 - Fabric 0.15.11</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.21.1 - Fabric 0.15.11</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.21 - Fabric 0.15.11</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.20.6 - Fabric 0.15.11</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.20.4 - Fabric 0.15.7</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.19.2 - Fabric 0.14.21</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">Minecraft 1.18.2 - Fabric 0.14.10</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">1.16.5 (Forge)</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">1.12.2 (Forge)</li>
+                <li class="version-item p-3 rounded-lg hover:bg-indigo-500/30 cursor-pointer">1.8.9 (OptiFine)</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <script>
+        // --- MOCK DATA FOR MODRINTH ---
+        const mockMods = [
+            { id: 'sodium', name: 'Sodium', author: 'jellysquid3', desc: 'A modern rendering engine for Minecraft that greatly improves frame rates.', icon: 'S' },
+            { id: 'iris', name: 'Iris Shaders', author: 'IrisShaders', desc: 'A modern shaders mod for Minecraft intended to be compatible with existing OptiFine shader packs.', icon: 'I' },
+            { id: 'lithium', name: 'Lithium', author: 'jellysquid3', desc: 'A general-purpose optimization mod for Minecraft which works to improve a number of systems.', icon: 'L' },
+            { id: 'starlight', name: 'Starlight', author: 'Spottedstar', desc: 'Rewrites the light engine to fix lighting performance and lighting errors.', icon: 'ST' },
+            { id: 'journeymap', name: 'JourneyMap', author: 'techbrew', desc: 'Real-time mapping in-game or in a web browser as you explore.', icon: 'JM' },
+            { id: 'indium', name: 'Indium', author: 'comp500', desc: 'An addon for Sodium to provide support for the Fabric Rendering API.', icon: 'IN' },
+            { id: 'fabricapi', name: 'Fabric API', author: 'modmuss50', desc: 'The core library for the Fabric toolchain, required by most Fabric mods.', icon: 'F' },
+            { id: 'modmenu', name: 'Mod Menu', author: 'Prospector', desc: 'Adds a mod menu to view the list of mods you have installed.', icon: 'MM' },
+            { id: 'appleskin', name: 'AppleSkin', author: 'squeek502', desc: 'Adds various food-related HUD improvements.', icon: 'A' },
+            { id: 'clothconfig', name: 'Cloth Config API', author: 'shedaniel', desc: 'A client-sided configuration library for Minecraft mods.', icon: 'CC' },
+        ];
+
+        // --- DOM ELEMENTS ---
+        const navLinks = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page-content');
+        const playButton = document.getElementById('play-button');
+        const ramSlider = document.getElementById('ram-allocation');
+        const ramValue = document.getElementById('ram-value');
+        const modListContainer = document.getElementById('mod-list');
+        const modSearchInput = document.getElementById('mod-search');
+        const versionSelectorBtn = document.getElementById('version-selector-btn');
+        const versionModal = document.getElementById('version-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const versionList = document.getElementById('version-list');
+        
+        // --- CORE LOGIC ---
+
+        // Function to switch between pages with a fade effect
+        function switchPage(targetId) {
+            const currentPage = document.querySelector('.page-content:not(.hidden)');
+            const targetPage = document.getElementById(targetId);
+
+            if (currentPage && currentPage.id === targetId) {
+                return; // Don't do anything if clicking the active page
+            }
+
+            // Update nav links immediately. CSS will handle the fade.
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.dataset.target === targetId);
+            });
+
+            // Fade out the current page
+            if (currentPage) {
+                currentPage.style.opacity = '0';
+            }
+
+            // After the fade-out transition, switch the content
+            setTimeout(() => {
+                if (currentPage) {
+                    currentPage.classList.add('hidden');
+                    currentPage.style.opacity = '1'; // Reset for next time
+                }
+                
+                targetPage.classList.remove('hidden');
+            }, 200); // This MUST match the CSS transition duration (0.2s)
+        }
+
+        // Function to render the list of mods
+        function renderMods(filter = '') {
+            modListContainer.innerHTML = ''; // Clear existing mods
+            const filteredMods = mockMods.filter(mod => mod.name.toLowerCase().includes(filter.toLowerCase()));
+
+            if (filteredMods.length === 0) {
+                modListContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">No mods found matching your search.</p>`;
+                return;
+            }
+
+            filteredMods.forEach(mod => {
+                const modCard = document.createElement('div');
+                modCard.className = 'mod-card glass-bg rounded-lg p-4 flex flex-col';
+                modCard.innerHTML = `
+                    <div class="flex items-center mb-3">
+                        <div class="w-12 h-12 rounded-lg bg-indigo-500 flex items-center justify-center text-2xl font-bold text-white mr-4 flex-shrink-0">
+                            ${mod.icon}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-white">${mod.name}</h3>
+                            <p class="text-sm text-gray-400">by ${mod.author}</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 text-sm flex-grow mb-4">${mod.desc}</p>
+                    <button data-mod-id="${mod.id}" class="install-btn mt-auto w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-2 rounded-lg transition-colors">
+                        Install
+                    </button>
+                `;
+                modListContainer.appendChild(modCard);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // Navigation link clicks
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchPage(link.dataset.target);
+            });
+        });
+
+        // Play button click simulation
+        playButton.addEventListener('click', () => {
+            playButton.textContent = 'LAUNCHING...';
+            playButton.classList.remove('bg-cyan-400');
+            playButton.classList.add('bg-gray-600', 'cursor-not-allowed');
+            setTimeout(() => {
+                playButton.textContent = 'PLAY';
+                playButton.classList.add('bg-cyan-400');
+                playButton.classList.remove('bg-gray-600', 'cursor-not-allowed');
+            }, 3000);
+        });
+
+        // RAM slider updates
+        ramSlider.addEventListener('input', () => {
+            ramValue.textContent = ramSlider.value;
+        });
+
+        // Mod search input
+        modSearchInput.addEventListener('keyup', () => {
+            renderMods(modSearchInput.value);
+        });
+
+        // Install button clicks (event delegation)
+        modListContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('install-btn')) {
+                const button = e.target;
+                button.textContent = 'Installed';
+                button.classList.remove('bg-green-600', 'hover:bg-green-500');
+                button.classList.add('bg-gray-500', 'cursor-not-allowed');
+                button.disabled = true;
+            }
+        });
+
+        // --- Version Selector Modal Logic ---
+        versionSelectorBtn.addEventListener('click', () => {
+            versionModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            versionModal.classList.add('hidden');
+        });
+
+        versionModal.addEventListener('click', (e) => {
+            if (e.target === versionModal) {
+                versionModal.classList.add('hidden');
+            }
+        });
+
+        versionList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('version-item')) {
+                const selectedVersion = e.target.textContent;
+                versionSelectorBtn.textContent = selectedVersion;
+                versionModal.classList.add('hidden');
+            }
+        });
+
+        // --- INITIALIZATION ---
+        // Set initial page to 'home' and render mods
+        document.addEventListener('DOMContentLoaded', () => {
+            switchPage('home'); // Ensure 'home' is active on load
+            renderMods();
+        });
+    </script>
+
+</body>
+</html>
+{
+  "name": "crystal-client-app",
+  "version": "1.0.0",
+  "description": "A modern Minecraft client with a sleek UI and powerful features.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
